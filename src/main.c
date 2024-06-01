@@ -16,6 +16,23 @@ u64 div_ceil(u64 a, u64 b) {
     return (u64)r;
 }
 
+i8 is_power_of_two(u64 x) {
+    return (x & (x - 1)) == 0;
+}
+
+u64 align_forward(u64 ptr, size_t align) {
+    u64 p, a, modulo;
+    assert(is_power_of_two(align));
+    
+    p = ptr;
+    a = (u64)align;
+    modulo = p & (a - 1);
+    if (modulo != 0) {
+        p += a - modulo;
+    }
+    return p;
+}
+
 structdef(Arena) {
     u8 *stack_base_memory;
     u64 stack_alloc_pos;
@@ -64,7 +81,7 @@ void *arenaPush(Arena *arena, u64 size) {
         }
         arena->pages_used += required_page_count;
     }
-    void *result = arena->stack_base_memory + arena->stack_alloc_pos;
+    void *result = (void *)align_forward((u64)arena->stack_base_memory + arena->stack_alloc_pos, 16);
     arena->stack_alloc_pos += size;
     return result;
 }
